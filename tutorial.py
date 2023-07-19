@@ -3,9 +3,10 @@ import random
 import math
 import pygame
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, splitext
 
 pygame.init()
+pygame.mixer.init()
 
 pygame.display.set_caption("C1 Hackathon Platformer")
 
@@ -19,9 +20,9 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
 
-def load_sprite_sheets(dir1, dir2, width, height, scale, direction=False):
+def load_sprite_sheets(dir1, dir2, width, height, scale=1, direction=False):
     path = join("assets", dir1, dir2)
-    images = [f for f in listdir(path) if isfile(join(path, f))]
+    images = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[-1].lower() != ".wav"]
     
     all_sprites = {}
     
@@ -43,6 +44,11 @@ def load_sprite_sheets(dir1, dir2, width, height, scale, direction=False):
             
     return all_sprites
 
+def load_sprite_audio(dir1, dir2):
+    path = join("assets", dir1, dir2, "audio.wav")
+    print(path)
+    audio = pygame.mixer.Sound(path) 
+    return audio
 
 def get_block(size):
     path = join("assets", "Terrain", "Terrain.png")
@@ -59,11 +65,13 @@ class Player(pygame.sprite.Sprite):
     # SPRITES = load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True)
     ANIMATION_DELAY = 3
 
-    def __init__(self, x, y, width, height, controls, sprites):
+    def __init__(self, x, y, width, height, controls, sprites, audio, voice):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
         self.controls = controls
         self.SPRITES = sprites
+        self.audio = audio
+        self.voice = voice
         self.x_vel = 0
         self.y_vel = 0
         self.mask = None
@@ -80,6 +88,10 @@ class Player(pygame.sprite.Sprite):
         self.jump_count += 1
         if self.jump_count == 1:
             self.fall_count = 0
+
+        if self.voice.get_busy():
+            self.voice.stop()
+        self.voice.play(self.audio)
     
     def move(self, dx, dy):
         self.rect.x += dx
@@ -292,8 +304,8 @@ def main(window):
     
     block_size = 96
 
-    player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True))
-    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True))
+    player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True), load_sprite_audio("MainCharacters", "Taylor"), pygame.mixer.Channel(1))
+    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True), load_sprite_audio("MainCharacters", "SamJackson"), pygame.mixer.Channel(2))
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
