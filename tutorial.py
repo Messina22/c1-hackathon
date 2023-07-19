@@ -10,7 +10,7 @@ pygame.init()
 pygame.display.set_caption("C1 Hackathon Platformer")
 
 # Key Variables
-WIDTH, HEIGHT = 1000, 800
+WIDTH, HEIGHT = 1056, 800
 FPS = 60
 PLAYER_VEL = 5
 
