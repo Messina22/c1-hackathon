@@ -19,7 +19,7 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
 
-def load_sprite_sheets(dir1, dir2, width, height, direction=False):
+def load_sprite_sheets(dir1, dir2, width, height, scale, direction=False):
     path = join("assets", dir1, dir2)
     images = [f for f in listdir(path) if isfile(join(path, f))]
     
@@ -33,7 +33,7 @@ def load_sprite_sheets(dir1, dir2, width, height, direction=False):
             surface = pygame.Surface((width, height), pygame.SRCALPHA, 32)
             rect = pygame.Rect(i * width, 0, width, height)
             surface.blit(sprite_sheet, (0, 0), rect)
-            sprites.append(pygame.transform.scale2x(surface))
+            sprites.append(pygame.transform.scale(surface, (width * scale, height * scale)))
             
         if direction:
             all_sprites[image.replace(".png", "") + "_right"] = sprites
@@ -175,32 +175,32 @@ class Block(Object):
         self.image.blit(block, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
         
-class Fire(Object):
-    ANIMATION_DELAY = 3
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height, "fire")
-        self.fire = load_sprite_sheets("Traps", "Fire", width, height)
-        self.image = self.fire["off"][0]
-        self.mask = pygame.mask.from_surface(self.image)
-        self.animation_count = 0
-        self.animation_name = "off"
+# class Fire(Object):
+#     ANIMATION_DELAY = 3
+#     def __init__(self, x, y, width, height):
+#         super().__init__(x, y, width, height, "fire")
+#         self.fire = load_sprite_sheets("Traps", "Fire", width, height)
+#         self.image = self.fire["off"][0]
+#         self.mask = pygame.mask.from_surface(self.image)
+#         self.animation_count = 0
+#         self.animation_name = "off"
         
-    def on(self):
-        self.animation_name = "on"
+#     def on(self):
+#         self.animation_name = "on"
         
-    def off(self):
-        self.animation_name = "off"
+#     def off(self):
+#         self.animation_name = "off"
         
-    def loop(self):
-        sprites = self.fire[self.animation_name]
-        sprite_index = (self.animation_count // self.ANIMATION_DELAY) % len(sprites)
-        self.image = sprites[sprite_index]
-        self.animation_count += 1
-        self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
-        self.mask = pygame.mask.from_surface(self.image)
+#     def loop(self):
+#         sprites = self.fire[self.animation_name]
+#         sprite_index = (self.animation_count // self.ANIMATION_DELAY) % len(sprites)
+#         self.image = sprites[sprite_index]
+#         self.animation_count += 1
+#         self.rect = self.image.get_rect(topleft=(self.rect.x, self.rect.y))
+#         self.mask = pygame.mask.from_surface(self.image)
         
-        if self.animation_count // self.ANIMATION_DELAY > len(sprites):
-            self.animation_count = 0
+#         if self.animation_count // self.ANIMATION_DELAY > len(sprites):
+#             self.animation_count = 0
         
     
 
@@ -292,8 +292,8 @@ def main(window):
     
     block_size = 96
 
-    player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True))
-    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, True))
+    player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True))
+    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True))
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
