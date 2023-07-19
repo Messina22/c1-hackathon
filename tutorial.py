@@ -267,7 +267,7 @@ def collide(player, objects, dx):
     return collided_object
 
 
-def handle_move(player, objects):
+def handle_move(player, objects, floor):
     keys = pygame.key.get_pressed()
 
     player.x_vel = 0
@@ -279,7 +279,7 @@ def handle_move(player, objects):
     if keys[player.controls['right']] and not collide_right:
         player.move_right(PLAYER_VEL)
         
-    vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
+    vertical_collide = handle_vertical_collision(player, floor + objects, player.y_vel)
     to_check = [collide_left, collide_right, *vertical_collide]
     for obj in to_check:
         if obj and obj.name == "fire":
@@ -297,7 +297,11 @@ def main(window):
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
+<<<<<<< Updated upstream
     objects = [*floor, Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size)]
+=======
+    objects = [Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size), fire]
+>>>>>>> Stashed changes
     
     offset_x = 0
     scroll_area_width = 200
@@ -319,15 +323,24 @@ def main(window):
                 if event.key == pygame.K_UP and player2.jump_count < 2:
                     player2.jump()
         
+<<<<<<< Updated upstream
         player1.loop(FPS)
         player2.loop(FPS)
         handle_move(player1, objects)
         handle_move(player2, objects)
         draw(window, background, bg_image, player1, player2, objects, offset_x)
+=======
+        player.loop(FPS)
+        fire.loop()
+        handle_move(player, objects, floor)
+        draw(window, background, bg_image, player, floor + objects, offset_x)
+>>>>>>> Stashed changes
         
         # if (player1.rect.right - offset_x >= WIDTH - scroll_area_width and player1.x_vel > 0) or (
         #     player1.rect.left - offset_x <= scroll_area_width and player1.x_vel < 0):
         #     offset_x += player1.x_vel
+
+        pygame.event.pump()
 
     pygame.quit()
     quit()
