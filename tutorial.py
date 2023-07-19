@@ -56,7 +56,7 @@ def get_block(size):
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
     GRAVITY = 1
-    SPRITES = load_sprite_sheets("MainCharacters", "VirtualGuy", 32, 32, True)
+    SPRITES = load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True)
     ANIMATION_DELAY = 3
 
     def __init__(self, x, y, width, height):
@@ -132,6 +132,10 @@ class Player(pygame.sprite.Sprite):
                 sprite_sheet = "double_jump"
         elif self.y_vel > self.GRAVITY * 2:
             sprite_sheet = "fall"
+        elif self.jump_count == 1:
+                sprite_sheet = "jump"
+        elif self.jump_count == 2:
+            sprite_sheet = "double_jump"            
         elif self.x_vel != 0:
             sprite_sheet = "run"
             
