@@ -294,12 +294,10 @@ def main(window):
 
     player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True))
     player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "VirtualGuy", 32, 32, True))
-    fire = Fire(100, HEIGHT - block_size - 64, 16, 32)
-    fire.on()
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
-    objects = [*floor, Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size), fire]
+    objects = [*floor, Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size)]
     
     offset_x = 0
     scroll_area_width = 200
@@ -323,7 +321,6 @@ def main(window):
         
         player1.loop(FPS)
         player2.loop(FPS)
-        fire.loop()
         handle_move(player1, objects)
         handle_move(player2, objects)
         draw(window, background, bg_image, player1, player2, objects, offset_x)
