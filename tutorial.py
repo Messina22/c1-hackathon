@@ -293,7 +293,7 @@ def main(window):
     block_size = 96
 
     player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True))
-    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "VirtualGuy", 32, 32, True))
+    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, True))
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
