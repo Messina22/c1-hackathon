@@ -56,12 +56,14 @@ def get_block(size):
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
     GRAVITY = 1
-    SPRITES = load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True)
+    # SPRITES = load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True)
     ANIMATION_DELAY = 3
 
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, controls, sprites):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
+        self.controls = controls
+        self.SPRITES = sprites
         self.x_vel = 0
         self.y_vel = 0
         self.mask = None
@@ -224,14 +226,15 @@ def get_background(name):
     return tiles, image
 
 # drawing tiles and updating display
-def draw(window, background, bg_image, player, objects, offset_x):
+def draw(window, background, bg_image, player1, player2, objects, offset_x):
     for tile in background:
         window.blit(bg_image, tile)
         
     for obj in objects:
         obj.draw(window, offset_x)
     
-    player.draw(window, offset_x)
+    player1.draw(window, offset_x)
+    player2.draw(window, offset_x)
 
     pygame.display.update()
     
@@ -271,9 +274,9 @@ def handle_move(player, objects):
     collide_left = collide(player, objects, -PLAYER_VEL * 2)
     collide_right = collide(player, objects, PLAYER_VEL * 2)
     
-    if keys[pygame.K_LEFT] and not collide_left:
+    if keys[player.controls['left']] and not collide_left:
         player.move_left(PLAYER_VEL)
-    if keys[pygame.K_RIGHT] and not collide_right:
+    if keys[player.controls['right']] and not collide_right:
         player.move_right(PLAYER_VEL)
         
     vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
@@ -289,7 +292,8 @@ def main(window):
     
     block_size = 96
 
-    player = Player(100, 100, 50, 50)
+    player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True))
+    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "VirtualGuy", 32, 32, True))
     fire = Fire(100, HEIGHT - block_size - 64, 16, 32)
     fire.on()
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
@@ -312,17 +316,21 @@ def main(window):
                 break
             
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and player.jump_count < 2:
-                    player.jump()
+                if event.key == pygame.K_w and player1.jump_count < 2:
+                    player1.jump()
+                if event.key == pygame.K_UP and player2.jump_count < 2:
+                    player2.jump()
         
-        player.loop(FPS)
+        player1.loop(FPS)
+        player2.loop(FPS)
         fire.loop()
-        handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, offset_x)
+        handle_move(player1, objects)
+        handle_move(player2, objects)
+        draw(window, background, bg_image, player1, player2, objects, offset_x)
         
-        if (player.rect.right - offset_x >= WIDTH - scroll_area_width and player.x_vel > 0) or (
-            player.rect.left - offset_x <= scroll_area_width and player.x_vel < 0):
-            offset_x += player.x_vel
+        # if (player1.rect.right - offset_x >= WIDTH - scroll_area_width and player1.x_vel > 0) or (
+        #     player1.rect.left - offset_x <= scroll_area_width and player1.x_vel < 0):
+        #     offset_x += player1.x_vel
 
     pygame.quit()
     quit()
