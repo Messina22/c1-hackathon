@@ -20,7 +20,7 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
 
-def load_sprite_sheets(dir1, dir2, width, height, scale=1, direction=False):
+def load_sprite_sheets(dir1, dir2, width, height, scale=1.0, direction=False):
     path = join("assets", dir1, dir2)
     images = [f for f in listdir(path) if isfile(join(path, f)) and splitext(f)[-1].lower() != ".wav"]
     
@@ -253,7 +253,7 @@ def draw(window, background, bg_image, player1, player2, objects, offset_x):
 def handle_vertical_collision(player, objects, dy):
     collided_objects = []
     for obj in objects:
-        if pygame.sprite.collide_mask(player, obj):
+        if player.rect.colliderect(obj):
             if dy > 0:
                 player.rect.bottom = obj.rect.top
                 player.landed()
@@ -333,6 +333,18 @@ def main(window):
         
         player1.loop(FPS)
         player2.loop(FPS)
+        if player1.rect.colliderect(player2.rect):
+            print('here')
+            if player1.rect.bottom <= player2.rect.top:
+                print("Player1 jumped on top of Player2")
+            elif player2.rect.bottom <= player1.rect.top:
+                print("Player2 jumped on top of Player1")
+            else:
+                if player1.rect.x < player2.rect.x:
+                    player1.rect.right = player2.rect.left
+                else:
+                    player1.rect.left = player2.rect.right
+        
         handle_move(player1, objects, floor)
         handle_move(player2, objects, floor)
         draw(window, background, bg_image, player1, player2, floor + objects, offset_x)
