@@ -11,3 +11,17 @@ Install Pygame:
 Run the game with:
 
 ```python tutorial.py```
+
+## Controls
+
+Taylor Swift: 
+* Left: A
+* Right: D
+* Jump: W
+* Double Jump: W + W
+
+Samuel L. Jackson:
+* Left: Left Arrow
+* Right: Right Arrow
+* Jump: Up Arrow
+* Double Jump: Up Arrow + Up Arrow
