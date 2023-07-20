@@ -122,6 +122,7 @@ class Player(pygame.sprite.Sprite):
         if self.jump_count == 1:
             self.fall_count = 0
 
+    def play_sound(self):
         if self.voice.get_busy():
             self.voice.stop()
         self.voice.play(self.audio)
@@ -152,7 +153,7 @@ class Player(pygame.sprite.Sprite):
         
         if self.is_hit:
             self.hit_count += 1
-        if self.hit_count > fps * 2:
+        if self.hit_count > fps:
             self.is_hit = False
             self.hit_count = 0
         
@@ -335,6 +336,7 @@ def handle_move(player, objects, floor):
     
     if keys[player.controls['left']] and not collide_left:
         player.move_left(PLAYER_VEL)
+
     if keys[player.controls['right']] and not collide_right:
         player.move_right(PLAYER_VEL)
 
@@ -367,6 +369,11 @@ def main(window):
     # left_walls = [Block(-block_size, i * block_size, block_size) for i in range(HEIGHT // block_size)]
     # right_walls = [Block(WIDTH, i * block_size, block_size) for i in range(HEIGHT // block_size)]
     # walls = left_walls + right_walls
+
+    path = join("assets", "Other", "music.mp3")
+    pygame.mixer.music.load(path)
+    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.play(-1)
     
     offset_x = 0
     scroll_area_width = 200
@@ -396,12 +403,14 @@ def main(window):
                 jumped_count += 1
                 if jumped_count == 1 and player1.health > 0 and player2.health > 0:
                     player2.health -= 1
-                print("Player1 jumped on top of Player2")
+                    player1.play_sound()
+                    player2.hit()
             elif player2.rect.bottom <= player1.rect.top + 20:
                 jumped_count += 1
                 if jumped_count == 1 and player1.health > 0 and player2.health > 0:
+                    player2.play_sound()
                     player1.health -= 1
-                print("Player2 jumped on top of Player1")
+                    player1.hit()
             else:
                 if player1.rect.x < player2.rect.x:
                     if player1.rect.left <= PLAYER_VEL:
