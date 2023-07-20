@@ -6,7 +6,6 @@ from os import listdir
 from os.path import isfile, join, splitext
 
 pygame.init()
-pygame.mixer.init()
 
 pygame.display.set_caption("C1 Hackathon Platformer")
 
@@ -14,6 +13,10 @@ pygame.display.set_caption("C1 Hackathon Platformer")
 WIDTH, HEIGHT = 1056, 800
 FPS = 60
 PLAYER_VEL = 5
+HEALTH_FONT = pygame.font.Font(join("assets", "Menu", "Text", "retro_font.ttf"), 20)
+WINNER_FONT = pygame.font.Font(join("assets", "Menu", "Text", "retro_font.ttf"), 80)
+
+MAX_HEALTH = 5
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -46,7 +49,6 @@ def load_sprite_sheets(dir1, dir2, width, height, scale=1.0, direction=False):
 
 def load_sprite_audio(dir1, dir2):
     path = join("assets", dir1, dir2, "audio.wav")
-    print(path)
     audio = pygame.mixer.Sound(path) 
     return audio
 
@@ -58,6 +60,35 @@ def get_block(size):
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
+def draw_lives(window, name, health, x_coord):
+    header = HEALTH_FONT.render(name, 1, (0,0,0))
+
+    window.blit(header, (x_coord, 50))
+
+    angle = 75
+    path = join("assets", "Other", "full_card.png")
+    full_card = pygame.image.load(path).convert_alpha()
+    path = join("assets", "Other", "empty_card.png")
+    empty_card = pygame.image.load(path).convert_alpha()
+
+    full_card = pygame.transform.scale(pygame.transform.rotate(full_card, angle), (50, 32))
+    empty_card = pygame.transform.scale(pygame.transform.rotate(empty_card, angle), (50, 32))
+
+    for i in range(MAX_HEALTH):
+        if i < health:
+            window.blit(full_card, (x_coord + (i*55), 100))
+        else:
+            window.blit(empty_card, (x_coord + (i*55), 100))
+
+
+def draw_winner(window, winner):
+    text = WINNER_FONT.render(winner.upper(), 1, (255,0,0))
+    wins = WINNER_FONT.render("WINS!!!", 1, (255,0,0))
+    window.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2 - 3*text.get_height()//2))
+    window.blit(wins, (WIDTH//2 - wins.get_width()//2, HEIGHT//2 - text.get_height()//2))
+
+    
+
 
 class Player(pygame.sprite.Sprite):
     COLOR = (255, 0, 0)
@@ -65,7 +96,7 @@ class Player(pygame.sprite.Sprite):
     # SPRITES = load_sprite_sheets("MainCharacters", "Taylor", 75, 101, True)
     ANIMATION_DELAY = 3
 
-    def __init__(self, x, y, width, height, controls, sprites, audio, voice):
+    def __init__(self, x, y, width, height, controls, sprites, audio, voice, name):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
         self.controls = controls
@@ -81,6 +112,8 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.is_hit = False
         self.hit_count = 0
+        self.health = MAX_HEALTH
+        self.name = name
         
     def jump(self):
         self.y_vel = -self.GRAVITY * 8
@@ -250,6 +283,15 @@ def draw(window, background, bg_image, player1, player2, objects, offset_x):
     player1.draw(window, offset_x)
     player2.draw(window, offset_x)
 
+    draw_lives(window, player1.name, player1.health, 30)
+    draw_lives(window, player2.name, player2.health, WIDTH - 300)
+
+    if player1.health == 0:
+        draw_winner(window, player2.name)
+    elif player2.health == 0:
+        draw_winner(window, player1.name)
+
+
     pygame.display.update()
     
 def handle_vertical_collision(player, objects, dy):
@@ -306,8 +348,8 @@ def main(window):
     
     block_size = 96
 
-    player1 = Player(50, HEIGHT - 200, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True), load_sprite_audio("MainCharacters", "Taylor"), pygame.mixer.Channel(1))
-    player2 = Player(WIDTH - 96, HEIGHT - 200, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True), load_sprite_audio("MainCharacters", "SamJackson"), pygame.mixer.Channel(2))
+    player1 = Player(50, HEIGHT - 200, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True), load_sprite_audio("MainCharacters", "Taylor"), pygame.mixer.Channel(1), "Taylor Swift")
+    player2 = Player(WIDTH - 96, HEIGHT - 200, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True), load_sprite_audio("MainCharacters", "SamJackson"), pygame.mixer.Channel(2), "Samuel L. Jackson")
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
@@ -326,6 +368,7 @@ def main(window):
     offset_x = 0
     scroll_area_width = 200
     
+    jumped_count = 0
     run = True
     # ensures the game runs at 60 fps
     while run: 
@@ -347,19 +390,26 @@ def main(window):
         player2.loop(FPS)
         if player1.rect.colliderect(player2.rect):
             if player1.rect.bottom <= player2.rect.top + 20:
+                jumped_count += 1
+                if jumped_count == 1 and player1.health > 0 and player2.health > 0:
+                    player2.health -= 1
                 print("Player1 jumped on top of Player2")
             elif player2.rect.bottom <= player1.rect.top + 20:
+                jumped_count += 1
+                if jumped_count == 1 and player1.health > 0 and player2.health > 0:
+                    player1.health -= 1
                 print("Player2 jumped on top of Player1")
             else:
                 if player1.rect.x < player2.rect.x:
                     player1.rect.right = player2.rect.left
                 else:
                     player1.rect.left = player2.rect.right
+        else:
+            jumped_count = 0
         
         handle_move(player1, objects, floor, walls)
         handle_move(player2, objects, floor, walls)
         draw(window, background, bg_image, player1, player2, floor + objects + walls, offset_x)
-
         
         # if (player1.rect.right - offset_x >= WIDTH - scroll_area_width and player1.x_vel > 0) or (
         #     player1.rect.left - offset_x <= scroll_area_width and player1.x_vel < 0):
