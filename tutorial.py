@@ -158,6 +158,8 @@ class Player(pygame.sprite.Sprite):
         sprite_index = (self.animation_count // self.ANIMATION_DELAY) % len(sprites)
         self.sprite = sprites[sprite_index]
         self.animation_count += 1
+        if self.animation_count > 100:
+            self.animation_count = 0
         self.update()
         
     def update(self):
@@ -304,12 +306,18 @@ def main(window):
     
     block_size = 96
 
-    player1 = Player(100, 100, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True), load_sprite_audio("MainCharacters", "Taylor"), pygame.mixer.Channel(1))
-    player2 = Player(200, 100, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True), load_sprite_audio("MainCharacters", "SamJackson"), pygame.mixer.Channel(2))
+    player1 = Player(50, HEIGHT - 200, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True), load_sprite_audio("MainCharacters", "Taylor"), pygame.mixer.Channel(1))
+    player2 = Player(WIDTH - 96, HEIGHT - 200, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True), load_sprite_audio("MainCharacters", "SamJackson"), pygame.mixer.Channel(2))
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
-    objects = [Block(0, HEIGHT - block_size * 2, block_size), Block(block_size * 3, HEIGHT - block_size * 4, block_size)]
+    objects = [Block(0, HEIGHT - block_size * 2, block_size), 
+               Block(block_size * 3, HEIGHT - block_size * 4, block_size),
+               Block(WIDTH - block_size, HEIGHT - block_size * 2, block_size),
+               Block(WIDTH - block_size * 4, HEIGHT - block_size * 4, block_size),
+               Block(block_size * 5, HEIGHT - block_size * 5, block_size),
+               Block(0, HEIGHT - block_size * 6, block_size),
+               Block(WIDTH - block_size, HEIGHT - block_size * 6, block_size)]
     
     left_walls = [Block(-block_size, i * block_size, block_size) for i in range(HEIGHT // block_size)]
     right_walls = [Block(WIDTH, i * block_size, block_size) for i in range(HEIGHT // block_size)]
