@@ -335,9 +335,9 @@ def main(window):
         player2.loop(FPS)
         if player1.rect.colliderect(player2.rect):
             print('here')
-            if player1.rect.bottom <= player2.rect.top:
+            if player1.rect.bottom <= player2.rect.top + 20:
                 print("Player1 jumped on top of Player2")
-            elif player2.rect.bottom <= player1.rect.top:
+            elif player2.rect.bottom <= player1.rect.top + 20:
                 print("Player2 jumped on top of Player1")
             else:
                 if player1.rect.x < player2.rect.x:
