@@ -7,7 +7,7 @@ from os.path import isfile, join, splitext
 
 pygame.init()
 
-pygame.display.set_caption("C1 Hackathon Platformer")
+pygame.display.set_caption("Capital Clash")
 
 # Key Variables
 WIDTH, HEIGHT = 1056, 800
@@ -372,7 +372,7 @@ def main(window):
 
     path = join("assets", "Other", "music.mp3")
     pygame.mixer.music.load(path)
-    pygame.mixer.music.set_volume(0.3)
+    pygame.mixer.music.set_volume(0.75)
     pygame.mixer.music.play(-1)
     
     offset_x = 0
