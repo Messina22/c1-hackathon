@@ -313,6 +313,9 @@ def collide(player, objects, dx):
     player.move(dx, 0)
     player.update()
     collided_object = None
+
+    if player.rect.left <= PLAYER_VEL or player.rect.right >= WIDTH - PLAYER_VEL:
+        collided_object = Block(0,0,0)
     for obj in objects:
         if pygame.sprite.collide_mask(player, obj):
             collided_object = obj
@@ -323,18 +326,18 @@ def collide(player, objects, dx):
     return collided_object
 
 
-def handle_move(player, objects, floor, walls):
+def handle_move(player, objects, floor):
     keys = pygame.key.get_pressed()
 
     player.x_vel = 0
-    collide_left = collide(player, objects + walls, -PLAYER_VEL * 2)
-    collide_right = collide(player, objects + walls, PLAYER_VEL * 2)
+    collide_left = collide(player, objects, -PLAYER_VEL * 2)
+    collide_right = collide(player, objects, PLAYER_VEL * 2)
     
     if keys[player.controls['left']] and not collide_left:
         player.move_left(PLAYER_VEL)
     if keys[player.controls['right']] and not collide_right:
         player.move_right(PLAYER_VEL)
-        
+
     vertical_collide = handle_vertical_collision(player, floor + objects, player.y_vel)
     to_check = [collide_left, collide_right, *vertical_collide]
     for obj in to_check:
@@ -361,9 +364,9 @@ def main(window):
                Block(0, HEIGHT - block_size * 6, block_size),
                Block(WIDTH - block_size, HEIGHT - block_size * 6, block_size)]
     
-    left_walls = [Block(-block_size, i * block_size, block_size) for i in range(HEIGHT // block_size)]
-    right_walls = [Block(WIDTH, i * block_size, block_size) for i in range(HEIGHT // block_size)]
-    walls = left_walls + right_walls
+    # left_walls = [Block(-block_size, i * block_size, block_size) for i in range(HEIGHT // block_size)]
+    # right_walls = [Block(WIDTH, i * block_size, block_size) for i in range(HEIGHT // block_size)]
+    # walls = left_walls + right_walls
     
     offset_x = 0
     scroll_area_width = 200
@@ -401,15 +404,21 @@ def main(window):
                 print("Player2 jumped on top of Player1")
             else:
                 if player1.rect.x < player2.rect.x:
-                    player1.rect.right = player2.rect.left
+                    if player1.rect.left <= PLAYER_VEL:
+                        player2.rect.left = player1.rect.right
+                    else:
+                        player1.rect.right = player2.rect.left
                 else:
-                    player1.rect.left = player2.rect.right
+                    if player1.rect.right >= WIDTH - PLAYER_VEL:
+                        player2.rect.right = player1.rect.left
+                    else:
+                        player1.rect.left = player2.rect.right
         else:
             jumped_count = 0
         
-        handle_move(player1, objects, floor, walls)
-        handle_move(player2, objects, floor, walls)
-        draw(window, background, bg_image, player1, player2, floor + objects + walls, offset_x)
+        handle_move(player1, objects, floor)
+        handle_move(player2, objects, floor)
+        draw(window, background, bg_image, player1, player2, floor + objects, offset_x)
         
         # if (player1.rect.right - offset_x >= WIDTH - scroll_area_width and player1.x_vel > 0) or (
         #     player1.rect.left - offset_x <= scroll_area_width and player1.x_vel < 0):
