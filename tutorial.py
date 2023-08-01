@@ -110,6 +110,7 @@ class Player(pygame.sprite.Sprite):
         self.animation_count = 0
         self.fall_count = 0
         self.jump_count = 0
+        self.has_landed = True
         self.is_hit = False
         self.hit_count = 0
         self.health = MAX_HEALTH
@@ -161,6 +162,7 @@ class Player(pygame.sprite.Sprite):
         self.update_sprite()
         
     def landed(self):
+        self.has_landed = True
         self.fall_count = 0
         self.y_vel = 0
         self.jump_count = 0
@@ -299,10 +301,13 @@ def handle_vertical_collision(player, objects, dy):
     collided_objects = []
     for obj in objects:
         if player.rect.colliderect(obj):
-            if dy > 0:
+
+            if dy > 0: #and player.rect.bottom - dy <= obj.rect.top:
+                if player.name == "Samuel L. Jackson":
+                    print(player.rect.bottom, obj.rect.top, dy, player.y_vel)
                 player.rect.bottom = obj.rect.top
                 player.landed()
-            elif dy < 0:
+            elif dy < 0 and player.rect.top - dy >= obj.rect.bottom:
                 player.rect.top = obj.rect.bottom
                 player.hit_head()
                 
@@ -353,8 +358,8 @@ def main(window):
     
     block_size = 96
 
-    player1 = Player(50, HEIGHT - 200, 50, 50, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True), load_sprite_audio("MainCharacters", "Taylor"), pygame.mixer.Channel(1), "Taylor Swift")
-    player2 = Player(WIDTH - 96, HEIGHT - 200, 50, 50, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True), load_sprite_audio("MainCharacters", "SamJackson"), pygame.mixer.Channel(2), "Samuel L. Jackson")
+    player1 = Player(50, HEIGHT - 200, 75, 101, {"left": pygame.K_a, "right": pygame.K_d}, load_sprite_sheets("MainCharacters", "Taylor", 75, 101, 0.75, True), load_sprite_audio("MainCharacters", "Taylor"), pygame.mixer.Channel(1), "Taylor Swift")
+    player2 = Player(WIDTH - 96, HEIGHT - 200, 32, 32, {"left": pygame.K_LEFT, "right": pygame.K_RIGHT},load_sprite_sheets("MainCharacters", "SamJackson", 32, 32, 2, True), load_sprite_audio("MainCharacters", "SamJackson"), pygame.mixer.Channel(2), "Samuel L. Jackson")
     floor = [Block(i * block_size, HEIGHT - block_size, block_size) 
              for i in range(-WIDTH // block_size, WIDTH * 2 // block_size)]
     
@@ -372,7 +377,7 @@ def main(window):
 
     path = join("assets", "Other", "music.mp3")
     pygame.mixer.music.load(path)
-    pygame.mixer.music.set_volume(0.75)
+    pygame.mixer.music.set_volume(0.7)
     pygame.mixer.music.play(-1)
     
     offset_x = 0
@@ -401,16 +406,18 @@ def main(window):
         if player1.rect.colliderect(player2.rect):
             if player1.rect.bottom <= player2.rect.top + 20:
                 jumped_count += 1
-                if jumped_count == 1 and player1.health > 0 and player2.health > 0:
+                if player1.health > 0 and player2.health > 0 and player1.has_landed:
                     player2.health -= 1
                     player1.play_sound()
                     player2.hit()
+                    player1.has_landed = False
             elif player2.rect.bottom <= player1.rect.top + 20:
                 jumped_count += 1
-                if jumped_count == 1 and player1.health > 0 and player2.health > 0:
+                if player1.health > 0 and player2.health > 0 and player2.has_landed:
                     player2.play_sound()
                     player1.health -= 1
                     player1.hit()
+                    player1.has_landed = False
             else:
                 if player1.rect.x < player2.rect.x:
                     if player1.rect.left <= PLAYER_VEL:
